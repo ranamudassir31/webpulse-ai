@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebPulse AI — Website Quality Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Variables ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-0:      #020817;
+      --bg-1:      #0d1526;
+      --bg-2:      #111e35;
+      --bg-3:      #162240;
+      --border:    #1e3052;
+      --border-hi: #2a4472;
+      --accent:    #4f8ef7;
+      --accent-2:  #7c3aed;
+      --accent-g:  linear-gradient(135deg, #4f8ef7, #7c3aed);
+      --text-0:    #f1f5fd;
+      --text-1:    #a8bbd8;
+      --text-2:    #5d7a9e;
+      --high:      #f43f5e;
+      --medium:    #f59e0b;
+      --low:       #10b981;
+      --radius:    12px;
+      --radius-lg: 20px;
+      --shadow:    0 4px 24px rgba(0,0,0,.45);
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --sidebar-w: 260px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-0);
+      color: var(--text-0);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ─── Sidebar ────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--bg-1);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      padding: 28px 20px;
+      transition: transform .3s ease;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--accent-g);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .logo-text {
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -.5px;
+    }
+    .logo-text span { color: var(--accent); }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 8px;
+      padding-left: 12px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-1);
+      transition: all .15s;
+      margin-bottom: 2px;
+      text-decoration: none;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: var(--bg-3);
+      color: var(--text-0);
+    }
+    .nav-item.active { color: var(--accent); }
+    .nav-icon { font-size: 17px; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .badge-beta {
+      background: rgba(79,142,247,.15);
+      color: var(--accent);
+      border: 1px solid rgba(79,142,247,.3);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: .5px;
+    }
+
+    /* ─── Main Content ───────────────────────────────────────── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 36px 40px;
+      max-width: calc(100vw - var(--sidebar-w));
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .page-title {
+      font-family: var(--font-head);
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-2);
+      margin-top: 4px;
+    }
+
+    /* ─── Scan Form ──────────────────────────────────────────── */
+    .scan-card {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .scan-card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(79,142,247,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .scan-form-label {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .scan-input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .url-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .url-input-icon {
+      position: absolute;
+      left: 16px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--text-2);
+    }
+    .url-input {
+      width: 100%;
+      background: var(--bg-0);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px 14px 46px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--text-0);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .url-input::placeholder { color: var(--text-2); }
+    .url-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,142,247,.12);
+    }
+
+    .btn-scan {
+      background: var(--accent-g);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity .2s, transform .1s;
+      white-space: nowrap;
+      letter-spacing: .3px;
+    }
+    .btn-scan:hover { opacity: .88; }
+    .btn-scan:active { transform: scale(.97); }
+    .btn-scan:disabled { opacity: .5; cursor: not-allowed; }
+
+    .scan-options {
+      margin-top: 14px;
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .scan-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ─── Loading State ──────────────────────────────────────── */
+    .loading-overlay {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      gap: 20px;
+    }
+    .loading-overlay.visible { display: flex; }
+
+    .pulse-ring {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: var(--accent);
+      border-right-color: var(--accent-2);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 240px;
+    }
+    .loading-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-2);
+      transition: color .3s;
+    }
+    .loading-step.active { color: var(--text-0); }
+    .loading-step.done { color: var(--low); }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .3s;
+    }
+    .loading-step.active .step-dot { background: var(--accent); animation: pulse-dot 1s infinite; }
+    .loading-step.done .step-dot { background: var(--low); }
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: .7; }
+    }
+
+    /* ─── Results ────────────────────────────────────────────── */
+    .results-section { display: none; }
+    .results-section.visible { display: block; }
+
+    /* Score grid */
+    .scores-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .score-card {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .score-card:hover { border-color: var(--border-hi); }
+
+    .score-ring {
+      width: 80px; height: 80px;
+      position: relative;
+    }
+    .score-ring svg {
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .score-ring-track { fill: none; stroke: var(--bg-3); stroke-width: 6; }
+    .score-ring-fill  {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1);
+    }
+    .score-ring-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .score-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+    .score-card.overall {
+      border-color: rgba(79,142,247,.3);
+      background: linear-gradient(135deg, rgba(79,142,247,.06), rgba(124,58,237,.06));
+    }
+
+    /* Issue counts row */
+    .issue-counts {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .issue-count-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .pill-high   { color: var(--high);   background: rgba(244,63,94,.08);  border-color: rgba(244,63,94,.2);  }
+    .pill-medium { color: var(--medium); background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.2); }
+    .pill-low    { color: var(--low);    background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.2); }
+
+    /* Summary box */
+    .summary-box {
+      background: linear-gradient(135deg, rgba(79,142,247,.06), rgba(124,58,237,.06));
+      border: 1px solid rgba(79,142,247,.2);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-1);
+    }
+    .summary-box strong { color: var(--text-0); }
+
+    /* Issues list */
+    .issues-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-2);
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      color: var(--text-2);
+      border: none;
+      background: none;
+    }
+    .filter-tab.active {
+      background: var(--bg-0);
+      color: var(--text-0);
+    }
+
+    .issues-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .issue-card {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: start;
+      transition: border-color .2s, transform .15s;
+      cursor: pointer;
+    }
+    .issue-card:hover {
+      border-color: var(--border-hi);
+      transform: translateX(3px);
+    }
+    .issue-card.expanded { border-color: var(--border-hi); }
+
+    .sev-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .sev-High   { background: rgba(244,63,94,.12);  color: var(--high);   }
+    .sev-Medium { background: rgba(245,158,11,.12); color: var(--medium); }
+    .sev-Low    { background: rgba(16,185,129,.12); color: var(--low);    }
+
+    .issue-body {}
+    .issue-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-0);
+      margin-bottom: 2px;
+    }
+    .issue-category {
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .issue-detail, .issue-suggestion {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      display: none;
+    }
+    .issue-card.expanded .issue-detail,
+    .issue-card.expanded .issue-suggestion { display: block; }
+    .issue-detail   { color: var(--text-2); }
+    .issue-suggestion {
+      color: var(--accent);
+      padding: 10px 14px;
+      background: rgba(79,142,247,.06);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+    }
+    .issue-suggestion::before {
+      content: '💡 ';
+    }
+
+    .issue-chevron {
+      font-size: 16px;
+      color: var(--text-2);
+      transition: transform .2s;
+      margin-top: 2px;
+    }
+    .issue-card.expanded .issue-chevron { transform: rotate(180deg); }
+
+    /* Meta info */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .meta-item {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .meta-key {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+    .meta-val {
+      font-size: 13px;
+      color: var(--text-0);
+      word-break: break-all;
+      line-height: 1.5;
+    }
+    .meta-val.missing { color: var(--high); font-style: italic; }
+
+    /* Download button */
+    .btn-download {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-1);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+    }
+    .btn-download:hover {
+      background: var(--bg-3);
+      border-color: var(--border-hi);
+      color: var(--text-0);
+    }
+
+    /* ─── Scan History ───────────────────────────────────────── */
+    .history-section { display: none; }
+    .history-section.visible { display: block; }
+
+    .history-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+    }
+    .history-table th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--text-2);
+      padding: 0 12px 8px;
+      text-align: left;
+    }
+    .history-row {
+      background: var(--bg-1);
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .history-row:hover { background: var(--bg-2); }
+    .history-row td {
+      padding: 12px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .history-row td:first-child {
+      border-left: 1px solid var(--border);
+      border-radius: var(--radius) 0 0 var(--radius);
+    }
+    .history-row td:last-child {
+      border-right: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .history-url {
+      font-weight: 500;
+      color: var(--accent);
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ─── Error Banner ───────────────────────────────────────── */
+    .error-banner {
+      display: none;
+      background: rgba(244,63,94,.1);
+      border: 1px solid rgba(244,63,94,.3);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--high);
+      margin-bottom: 20px;
+      align-items: center;
+      gap: 10px;
+    }
+    .error-banner.visible { display: flex; }
+
+    /* ─── Responsive ─────────────────────────────────────────── */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 16px; left: 16px;
+      z-index: 200;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--text-0);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main {
+        margin-left: 0;
+        max-width: 100%;
+        padding: 24px 16px;
+        padding-top: 64px;
+      }
+      .hamburger { display: block; }
+      .scan-input-row { flex-direction: column; }
+      .btn-scan { width: 100%; justify-content: center; }
+    }
+
+    /* ─── Animations ─────────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fadeInUp .4s ease both;
+    }
+    .animate-in:nth-child(1) { animation-delay: .05s; }
+    .animate-in:nth-child(2) { animation-delay: .10s; }
+    .animate-in:nth-child(3) { animation-delay: .15s; }
+    .animate-in:nth-child(4) { animation-delay: .20s; }
+  </style>
+</head>
+<body>
+
+<!-- Hamburger (mobile) -->
+<button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+<!-- ─── Sidebar ──────────────────────────────────────────────── -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">Web<span>Pulse</span> AI</div>
+  </div>
+
+  <div class="nav-label">Navigation</div>
+  <a class="nav-item active" onclick="showView('scanner')" href="#">
+    <span class="nav-icon">🔍</span> Scanner
+  </a>
+  <a class="nav-item" onclick="showView('history')" href="#">
+    <span class="nav-icon">📋</span> Scan History
+  </a>
+
+  <div style="margin-top: 20px; margin-bottom: 8px;" class="nav-label">Reports</div>
+  <a class="nav-item" id="download-link-nav" href="#" onclick="downloadReport(event)">
+    <span class="nav-icon">📄</span> Download PDF
+  </a>
+
+  <div class="sidebar-footer">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+      <span>WebPulse AI</span>
+      <span class="badge-beta">BETA</span>
+    </div>
+    <div>Quality scanner for web professionals</div>
+  </div>
+</nav>
+
+<!-- ─── Main ─────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- ── Scanner View ─────────────────────────────────── -->
+  <div id="view-scanner">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Website Scanner</div>
+        <div class="page-subtitle">Audit any website for SEO, accessibility, and performance issues</div>
+      </div>
+    </div>
+
+    <!-- Scan form -->
+    <div class="scan-card">
+      <div class="scan-form-label">Enter a URL to scan</div>
+      <div class="scan-input-row">
+        <div class="url-input-wrap">
+          <span class="url-input-icon">🌐</span>
+          <input
+            class="url-input"
+            id="url-input"
+            type="url"
+            placeholder="https://example.com"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <button class="btn-scan" id="scan-btn" onclick="startScan()">
+          <span id="scan-btn-icon">⚡</span>
+          <span id="scan-btn-text">Scan Now</span>
+        </button>
+      </div>
+      <div class="scan-options">
+        <span class="scan-option">✅ SEO Analysis</span>
+        <span class="scan-option">✅ Accessibility Check</span>
+        <span class="scan-option">✅ Performance Audit</span>
+        <span class="scan-option">✅ AI Recommendations</span>
+      </div>
+    </div>
+
+    <!-- Error banner -->
+    <div class="error-banner" id="error-banner">
+      <span>⚠️</span>
+      <span id="error-msg"></span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="pulse-ring"></div>
+      <div class="loading-steps">
+        <div class="loading-step" id="step-1"><div class="step-dot"></div>Connecting to website…</div>
+        <div class="loading-step" id="step-2"><div class="step-dot"></div>Parsing HTML structure…</div>
+        <div class="loading-step" id="step-3"><div class="step-dot"></div>Running SEO analysis…</div>
+        <div class="loading-step" id="step-4"><div class="step-dot"></div>Checking accessibility…</div>
+        <div class="loading-step" id="step-5"><div class="step-dot"></div>Measuring performance signals…</div>
+        <div class="loading-step" id="step-6"><div class="step-dot"></div>Generating AI recommendations…</div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-section" id="results-section">
+
+      <!-- Scores -->
+      <div class="scores-grid" id="scores-grid"></div>
+
+      <!-- Issue pill counts -->
+      <div class="issue-counts" id="issue-counts"></div>
+
+      <!-- Executive summary -->
+      <div class="summary-box" id="summary-box"></div>
+
+      <!-- Page meta -->
+      <div style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+        <div class="section-title">Page Information</div>
+        <a class="btn-download" id="download-btn" href="#" onclick="downloadReport(event)">
+          <span>📄</span> Download PDF Report
+        </a>
+      </div>
+      <div class="meta-grid" id="meta-grid"></div>
+
+      <!-- Issues -->
+      <div class="issues-header">
+        <div class="section-title">Detected Issues</div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterIssues('all', this)">All</button>
+          <button class="filter-tab" onclick="filterIssues('High', this)">High</button>
+          <button class="filter-tab" onclick="filterIssues('Medium', this)">Medium</button>
+          <button class="filter-tab" onclick="filterIssues('Low', this)">Low</button>
+        </div>
+      </div>
+      <div class="issues-list" id="issues-list"></div>
+
+    </div>
+  </div><!-- /scanner view -->
+
+  <!-- ── History View ─────────────────────────────────── -->
+  <div id="view-history" class="history-section">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Scan History</div>
+        <div class="page-subtitle">Your recent website audits</div>
+      </div>
+      <button class="btn-scan" onclick="loadHistory()">
+        <span>🔄</span> Refresh
+      </button>
+    </div>
+    <div id="history-content">
+      <div style="color:var(--text-2); padding:20px 0;">Loading history…</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  /* ─────────────────────────────────────────────────────────────
+     State
+  ─────────────────────────────────────────────────────────────── */
+  let currentScanId = null;
+  let allIssues = [];
+
+  /* ─────────────────────────────────────────────────────────────
+     View switching
+  ─────────────────────────────────────────────────────────────── */
+  function showView(name) {
+    document.querySelectorAll('.main > div').forEach(el => el.style.display = 'none');
+    document.getElementById(`view-${name}`).style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    if (name === 'history') loadHistory();
+    closeSidebar();
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Scan
+  ─────────────────────────────────────────────────────────────── */
+  async function startScan() {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url) {
+      showError('Please enter a URL to scan.');
+      return;
+    }
+
+    hideError();
+    showLoading();
+    setScanning(true);
+    clearResults();
+
+    // Animate loading steps
+    const steps = [1,2,3,4,5,6];
+    let stepIdx = 0;
+    const stepInterval = setInterval(() => {
+      if (stepIdx < steps.length) {
+        if (stepIdx > 0) {
+          document.getElementById(`step-${steps[stepIdx-1]}`).className = 'loading-step done';
+        }
+        document.getElementById(`step-${steps[stepIdx]}`).className = 'loading-step active';
+        stepIdx++;
+      }
+    }, 700);
+
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ url })
+      });
+
+      clearInterval(stepInterval);
+      // Mark all steps done
+      steps.forEach(s => document.getElementById(`step-${s}`).className = 'loading-step done');
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || `Server error ${res.status}`);
+      }
+
+      if (data.error) {
+        showError(`Scan warning: ${data.error}`);
+      }
+
+      renderResults(data);
+
+    } catch (err) {
+      clearInterval(stepInterval);
+      showError(err.message || 'An unexpected error occurred.');
+    } finally {
+      hideLoading();
+      setScanning(false);
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Render results
+  ─────────────────────────────────────────────────────────────── */
+  function renderResults(data) {
+    currentScanId = data.scan_id;
+    allIssues = data.issues || [];
+
+    renderScores(data.scores || {});
+    renderIssueCounts(data.issue_counts || {});
+    renderSummary(data.executive_summary || '');
+    renderMeta(data.meta || {}, data.stats || {}, data.response_time_ms);
+    renderIssues(allIssues);
+
+    document.getElementById('results-section').classList.add('visible');
+  }
+
+  function renderScores(scores) {
+    const defs = [
+      { key: 'overall',     label: 'Overall',     cls: 'overall' },
+      { key: 'seo',         label: 'SEO',          cls: '' },
+      { key: 'bugs',        label: 'Accessibility', cls: '' },
+      { key: 'performance', label: 'Performance',  cls: '' },
+    ];
+    const colors = (s) => s >= 80 ? '#10b981' : s >= 55 ? '#f59e0b' : '#f43f5e';
+    const circumference = 2 * Math.PI * 28;
+
+    document.getElementById('scores-grid').innerHTML = defs.map((d, i) => {
+      const score = scores[d.key] ?? 0;
+      const offset = circumference - (score / 100) * circumference;
+      const color = colors(score);
+      return `
+        <div class="score-card ${d.cls} animate-in">
+          <div class="score-ring">
+            <svg viewBox="0 0 64 64">
+              <circle class="score-ring-track" cx="32" cy="32" r="28"/>
+              <circle class="score-ring-fill" cx="32" cy="32" r="28"
+                stroke="${color}"
+                stroke-dasharray="${circumference}"
+                stroke-dashoffset="${offset}"/>
+            </svg>
+            <div class="score-ring-num" style="color:${color}">${score}</div>
+          </div>
+          <div class="score-label">${d.label}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderIssueCounts(counts) {
+    const pills = [
+      { key: 'High',   cls: 'pill-high',   icon: '🔴' },
+      { key: 'Medium', cls: 'pill-medium',  icon: '🟡' },
+      { key: 'Low',    cls: 'pill-low',     icon: '🟢' },
+    ];
+    document.getElementById('issue-counts').innerHTML = pills.map(p => `
+      <div class="issue-count-pill ${p.cls}">
+        ${p.icon} ${counts[p.key] ?? 0} ${p.key}
+      </div>`).join('');
+  }
+
+  function renderSummary(text) {
+    document.getElementById('summary-box').innerHTML = text || '—';
+  }
+
+  function renderMeta(meta, stats, responseTime) {
+    const items = [
+      { key: 'Page Title',       val: meta.title },
+      { key: 'Meta Description', val: meta.description },
+      { key: 'H1 Heading',       val: meta.h1 },
+      { key: 'Canonical URL',    val: meta.canonical },
+      { key: 'Response Time',    val: responseTime ? `${responseTime} ms` : null },
+      { key: 'Page Size',        val: stats.page_size_kb ? `${stats.page_size_kb} KB` : null },
+      { key: 'Total Images',     val: stats.images_total != null ? `${stats.images_total} (${stats.images_missing_alt ?? 0} missing alt)` : null },
+      { key: 'Links Found',      val: stats.links_total != null ? String(stats.links_total) : null },
+    ];
+
+    document.getElementById('meta-grid').innerHTML = items.map(item => `
+      <div class="meta-item animate-in">
+        <div class="meta-key">${item.key}</div>
+        <div class="meta-val ${!item.val ? 'missing' : ''}">${item.val || 'Not found / Missing'}</div>
+      </div>`).join('');
+  }
+
+  function renderIssues(issues) {
+    const list = document.getElementById('issues-list');
+    if (!issues.length) {
+      list.innerHTML = `<div style="color:var(--low); padding:20px; font-size:15px;">🎉 No issues found! The site looks great.</div>`;
+      return;
+    }
+    const order = { High: 0, Medium: 1, Low: 2 };
+    const sorted = [...issues].sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+
+    list.innerHTML = sorted.map((issue, i) => `
+      <div class="issue-card animate-in" onclick="toggleIssue(this)" data-severity="${issue.severity}">
+        <span class="sev-badge sev-${issue.severity}">${issue.severity}</span>
+        <div class="issue-body">
+          <div class="issue-title">${escHtml(issue.title)}</div>
+          <div class="issue-category">${escHtml(issue.category)}</div>
+          <div class="issue-detail">${escHtml(issue.detail)}</div>
+          ${issue.suggestion ? `<div class="issue-suggestion">${escHtml(issue.suggestion)}</div>` : ''}
+        </div>
+        <span class="issue-chevron">▾</span>
+      </div>`).join('');
+  }
+
+  function toggleIssue(el) {
+    el.classList.toggle('expanded');
+  }
+
+  function filterIssues(severity, btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered = severity === 'all' ? allIssues : allIssues.filter(i => i.severity === severity);
+    renderIssues(filtered);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     History
+  ─────────────────────────────────────────────────────────────── */
+  async function loadHistory() {
+    const el = document.getElementById('history-content');
+    el.innerHTML = '<div style="color:var(--text-2)">Loading…</div>';
+    try {
+      const res = await fetch('/api/scans');
+      const scans = await res.json();
+      if (!scans.length) {
+        el.innerHTML = '<div style="color:var(--text-2); padding:20px 0;">No scans yet. Run your first scan from the Scanner.</div>';
+        return;
+      }
+      el.innerHTML = `
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>URL</th>
+              <th>Overall</th>
+              <th>SEO</th>
+              <th>Accessibility</th>
+              <th>Performance</th>
+              <th>Issues</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${scans.map(s => `
+              <tr class="history-row" onclick="loadScan(${s.id})">
+                <td>${s.id}</td>
+                <td><div class="history-url">${escHtml(s.url)}</div></td>
+                <td><strong style="color:${scoreColor(s.score_overall)}">${s.score_overall ?? '—'}</strong></td>
+                <td>${s.score_seo ?? '—'}</td>
+                <td>${s.score_bugs ?? '—'}</td>
+                <td>${s.score_performance ?? '—'}</td>
+                <td>
+                  <span style="color:var(--high)">${s.issues_high}H</span>
+                  <span style="color:var(--medium); margin: 0 4px">${s.issues_medium}M</span>
+                  <span style="color:var(--low)">${s.issues_low}L</span>
+                </td>
+                <td style="color:var(--text-2)">${formatDate(s.scanned_at)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    } catch (e) {
+      el.innerHTML = `<div style="color:var(--high)">Failed to load history: ${e.message}</div>`;
+    }
+  }
+
+  async function loadScan(id) {
+    showView_direct('scanner');
+    try {
+      const res = await fetch(`/api/scan/${id}`);
+      const data = await res.json();
+      if (data.result) {
+        renderResults({...data.result, scan_id: data.id});
+        document.getElementById('url-input').value = data.url;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch(e) {
+      showError('Failed to load scan: ' + e.message);
+    }
+  }
+
+  function showView_direct(name) {
+    document.querySelectorAll('.main > div').forEach(el => el.style.display = 'none');
+    document.getElementById(`view-${name}`).style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelector('.nav-item').classList.add('active');
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Download
+  ─────────────────────────────────────────────────────────────── */
+  function downloadReport(e) {
+    e.preventDefault();
+    if (!currentScanId) {
+      alert('Run a scan first to generate a report.');
+      return;
+    }
+    window.location.href = `/api/report/${currentScanId}`;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Utilities
+  ─────────────────────────────────────────────────────────────── */
+  function setScanning(scanning) {
+    const btn = document.getElementById('scan-btn');
+    btn.disabled = scanning;
+    document.getElementById('scan-btn-text').textContent = scanning ? 'Scanning…' : 'Scan Now';
+    document.getElementById('scan-btn-icon').textContent = scanning ? '⏳' : '⚡';
+  }
+  function showLoading() {
+    document.getElementById('loading-overlay').classList.add('visible');
+    // Reset steps
+    for (let i = 1; i <= 6; i++) {
+      document.getElementById(`step-${i}`).className = 'loading-step';
+    }
+  }
+  function hideLoading() {
+    document.getElementById('loading-overlay').classList.remove('visible');
+  }
+  function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-banner').classList.add('visible');
+  }
+  function hideError() {
+    document.getElementById('error-banner').classList.remove('visible');
+  }
+  function clearResults() {
+    document.getElementById('results-section').classList.remove('visible');
+    allIssues = [];
+    currentScanId = null;
+  }
+  function scoreColor(s) {
+    if (!s && s !== 0) return 'var(--text-2)';
+    return s >= 80 ? 'var(--low)' : s >= 55 ? 'var(--medium)' : 'var(--high)';
+  }
+  function formatDate(ts) {
+    return new Date(ts * 1000).toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Enter key on input
+  document.getElementById('url-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startScan();
+  });
+
+  // Init — show scanner view
+  document.getElementById('view-history').style.display = 'none';
+</script>
+</body>
+</html>
