@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────────
+# .gitignore  —  Files Git will NEVER upload to GitHub
+# ─────────────────────────────────────────────────────────────
+
+# MOST IMPORTANT: Your API key — NEVER commit this
+.env
+.env.local
+.env.production
+.env.staging
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local database (Render has its own)
+*.db
+*.sqlite
+*.sqlite3
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Build artifacts
+dist/
+build/
+*.egg-info/

@@ -1,0 +1,50 @@
+# .dockerignore
+# ─────────────────────────────────────────────────────────────────
+# Files listed here are NOT copied into the Docker container.
+# Keeps the container small and prevents sensitive files leaking.
+# ─────────────────────────────────────────────────────────────────
+
+# Python cache (always regenerated, no need to copy)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments (Docker installs its own)
+venv/
+.venv/
+env/
+
+# Local database (Render has its own storage)
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment file (NEVER copy — set env vars in Render dashboard)
+.env
+.env.local
+.env.production
+
+# Development files
+*.bat
+.DS_Store
+.git/
+.gitignore
+
+# Test files
+tests/
+test_*.py
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs
+*.log
+logs/
+
+# Documentation (not needed at runtime)
+README.md
+CHANGELOG.md

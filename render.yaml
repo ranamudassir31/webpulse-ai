@@ -1,0 +1,49 @@
+# render.yaml
+# ─────────────────────────────────────────────────────────────────
+# Render deployment configuration for WebPulse AI
+#
+# This file tells Render:
+#   - What kind of app this is (web service)
+#   - How to install dependencies
+#   - How to start the server
+#   - What environment variables are needed
+#
+# HOW TO USE:
+#   1. Push your project to GitHub
+#   2. Go to https://render.com
+#   3. Click "New" → "Web Service"
+#   4. Connect your GitHub repo
+#   5. Render auto-detects this file and configures everything
+# ─────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    name: webpulse-ai
+    runtime: python
+    region: oregon          # free tier region (oregon or frankfurt)
+    plan: free              # free tier — no credit card needed
+
+    # How to install dependencies
+    buildCommand: pip install -r requirements.txt
+
+    # How to start the server
+    # --host 0.0.0.0  = accept connections from anywhere (required on Render)
+    # --port $PORT    = Render assigns the port, we read it from environment
+    # --workers 2     = handle multiple requests at the same time
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2
+
+    # Environment variables
+    # Add ANTHROPIC_API_KEY here later when you have credits
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: CLAUDE_ENABLED
+        value: "false"          # set to "true" when you add your API key
+      - key: ENVIRONMENT
+        value: "production"
+
+    # Health check — Render pings this URL to know the app is running
+    healthCheckPath: /api/health
+
+    # Auto-deploy when you push to GitHub
+    autoDeploy: true
